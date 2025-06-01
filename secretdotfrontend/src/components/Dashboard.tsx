@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar"
 import { getContract } from "~/utils/contract"
 import { getSignedContract } from "~/utils/contract"
 import { ethers } from "ethers"
+import { log } from "console"
 
 // Simulated data
 const receivedMessages = [
@@ -158,12 +159,16 @@ export default function Dashboard() {
     setHasPublicKey(true)
 
     const makePublicKey = async () => {
+      console.log("Haciendo pública la clave...");
+
       await window.ethereum.request({ method: "eth_requestAccounts" });
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const signedContract = await getSignedContract(signer);
+      console.log("Signed Contract:", signedContract);
       if (signedContract.RegisterUserPubKey) {
+        console.log("Registrando clave pública en el contrato...");
         await signedContract.RegisterUserPubKey(publicKey)
       } else {
         console.error("RegisterUserPubKey is not defined on the contract.");
