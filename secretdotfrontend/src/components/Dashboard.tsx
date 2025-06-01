@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import SecureMessageModal from "./Secure-Message-Modal"
 import { Plus, Shield, Key, Clock, CheckCircle, Send, Inbox } from "lucide-react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
@@ -69,6 +70,7 @@ const sentMessages = [
 export default function Dashboard() {
   const [hasPublicKey, setHasPublicKey] = useState(false)
   const [activeTab, setActiveTab] = useState("inbox")
+  const [modalOpen, setModalOpen] = useState(false)
 
   const handleMakePublicKey = () => {
     setHasPublicKey(true)
@@ -96,7 +98,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-3 mb-2">
             <Shield className="h-8 w-8 text-emerald-400" />
             <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-              SecureChain Messenger
+              SecretDot
             </h1>
           </div>
           <p className="text-slate-400 font-mono text-sm">Mensajería descentralizada con cifrado end-to-end</p>
@@ -137,7 +139,7 @@ export default function Dashboard() {
                   usuarios puedan enviarte mensajes seguros en la blockchain. Tu clave privada permanece segura en tu
                   dispositivo.
                 </AlertDescription>
-                <Button onClick={handleMakePublicKey} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Button onClick={handleMakePublicKey} className="w-fit bg-emerald-600 hover:bg-emerald-700 text-white">
                   <Key className="h-4 w-4 mr-2" />
                   Hacer pública mi clave
                 </Button>
@@ -243,10 +245,14 @@ export default function Dashboard() {
         <Button
           size="lg"
           className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:scale-105"
+          onClick={() => setModalOpen(true)}
         >
           <Plus className="h-6 w-6" />
           <span className="sr-only">Nuevo mensaje</span>
         </Button>
+
+        {/* Secure Message Modal */}
+        <SecureMessageModal open={modalOpen} onOpenChange={setModalOpen} />
       </div>
     </div>
   )
