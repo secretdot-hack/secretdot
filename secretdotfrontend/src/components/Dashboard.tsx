@@ -1,0 +1,253 @@
+"use client"
+
+import { useState } from "react"
+import { Plus, Shield, Key, Clock, CheckCircle, Send, Inbox } from "lucide-react"
+import { Button } from "./ui/button"
+import { Card, CardContent } from "./ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
+import { Badge } from "./ui/badge"
+import { Avatar, AvatarFallback } from "./ui/avatar"
+
+// Simulated data
+const receivedMessages = [
+  {
+    id: "1",
+    from: "0x742d35Cc6634C0532925a3b8D4C0d8b3f8e4C2f1",
+    fromAlias: "Alice",
+    subject: "Smart Contract Audit Results",
+    preview: "The audit has been completed successfully. All vulnerabilities have been addressed...",
+    timestamp: "2024-01-15T10:30:00Z",
+    isRead: false,
+    encrypted: true,
+  },
+  {
+    id: "2",
+    from: "0x8ba1f109551bD432803012645Hac136c22C177e9",
+    fromAlias: "Bob",
+    subject: "DeFi Protocol Update",
+    preview: "New liquidity pools are now available. Check out the updated tokenomics...",
+    timestamp: "2024-01-14T15:45:00Z",
+    isRead: true,
+    encrypted: true,
+  },
+  {
+    id: "3",
+    from: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+    fromAlias: "Charlie",
+    subject: "Governance Proposal #42",
+    preview: "Please review and vote on the latest governance proposal regarding...",
+    timestamp: "2024-01-13T09:15:00Z",
+    isRead: true,
+    encrypted: true,
+  },
+]
+
+const sentMessages = [
+  {
+    id: "1",
+    to: "0x742d35Cc6634C0532925a3b8D4C0d8b3f8e4C2f1",
+    toAlias: "Alice",
+    subject: "Re: Smart Contract Audit",
+    preview: "Thank you for the comprehensive audit report. I'll implement the suggested changes...",
+    timestamp: "2024-01-15T11:00:00Z",
+    status: "delivered",
+    encrypted: true,
+  },
+  {
+    id: "2",
+    to: "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD",
+    toAlias: "Dave",
+    subject: "Token Distribution Schedule",
+    preview: "Here's the updated token distribution schedule for Q1 2024...",
+    timestamp: "2024-01-14T14:20:00Z",
+    status: "pending",
+    encrypted: true,
+  },
+]
+
+export default function Dashboard() {
+  const [hasPublicKey, setHasPublicKey] = useState(false)
+  const [activeTab, setActiveTab] = useState("inbox")
+
+  const handleMakePublicKey = () => {
+    setHasPublicKey(true)
+  }
+
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+
+    if (diffInHours < 1) return "Hace unos minutos"
+    if (diffInHours < 24) return `Hace ${diffInHours}h`
+    return date.toLocaleDateString()
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="container mx-auto p-6 max-w-6xl">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <Shield className="h-8 w-8 text-emerald-400" />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              SecureChain Messenger
+            </h1>
+          </div>
+          <p className="text-slate-400 font-mono text-sm">Mensajería descentralizada con cifrado end-to-end</p>
+        </div>
+
+        {/* Main Content */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-slate-900 border border-slate-800">
+            <TabsTrigger
+              value="inbox"
+              className="data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-400 flex items-center gap-2"
+            >
+              <Inbox className="h-4 w-4" />
+              Inbox
+              {!hasPublicKey && (
+                <Badge variant="destructive" className="ml-2 h-5 text-xs">
+                  !
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value="sent"
+              className="data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-400 flex items-center gap-2"
+            >
+              <Send className="h-4 w-4" />
+              Enviados
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Inbox Tab */}
+          <TabsContent value="inbox" className="mt-6">
+            {!hasPublicKey ? (
+              <Alert className="border-amber-500/50 bg-amber-500/10">
+                <Key className="h-4 w-4 text-amber-500" />
+                <AlertTitle className="text-amber-500">Clave pública requerida</AlertTitle>
+                <AlertDescription className="text-slate-300 mb-4">
+                  Para recibir mensajes cifrados, necesitas hacer pública tu clave de cifrado. Esto permite que otros
+                  usuarios puedan enviarte mensajes seguros en la blockchain. Tu clave privada permanece segura en tu
+                  dispositivo.
+                </AlertDescription>
+                <Button onClick={handleMakePublicKey} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Key className="h-4 w-4 mr-2" />
+                  Hacer pública mi clave
+                </Button>
+              </Alert>
+            ) : (
+              <div className="space-y-4">
+                {receivedMessages.map((message) => (
+                  <Card
+                    key={message.id}
+                    className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-colors"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <Avatar className="h-10 w-10 bg-slate-800">
+                            <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-400 text-slate-900 font-bold">
+                              {message.fromAlias[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-slate-200">{message.fromAlias}</span>
+                              <span className="text-xs font-mono text-slate-500">{formatAddress(message.from)}</span>
+                              {message.encrypted && <Shield className="h-3 w-3 text-emerald-400" />}
+                            </div>
+                            <h3 className={`font-medium mb-1 ${!message.isRead ? "text-white" : "text-slate-300"}`}>
+                              {message.subject}
+                            </h3>
+                            <p className="text-sm text-slate-400 line-clamp-2">{message.preview}</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className="text-xs text-slate-500 font-mono">{formatTime(message.timestamp)}</span>
+                          {!message.isRead && <div className="h-2 w-2 bg-emerald-400 rounded-full"></div>}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Sent Tab */}
+          <TabsContent value="sent" className="mt-6">
+            <div className="space-y-4">
+              {sentMessages.map((message) => (
+                <Card
+                  key={message.id}
+                  className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-colors"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3 flex-1">
+                        <Avatar className="h-10 w-10 bg-slate-800">
+                          <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-400 text-slate-900 font-bold">
+                            {message.toAlias[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm text-slate-400">Para:</span>
+                            <span className="font-semibold text-slate-200">{message.toAlias}</span>
+                            <span className="text-xs font-mono text-slate-500">{formatAddress(message.to)}</span>
+                            {message.encrypted && <Shield className="h-3 w-3 text-emerald-400" />}
+                          </div>
+                          <h3 className="font-medium text-slate-300 mb-1">{message.subject}</h3>
+                          <p className="text-sm text-slate-400 line-clamp-2">{message.preview}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="text-xs text-slate-500 font-mono">{formatTime(message.timestamp)}</span>
+                        <Badge
+                          variant={message.status === "delivered" ? "default" : "secondary"}
+                          className={`text-xs ${
+                            message.status === "delivered"
+                              ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                              : "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                          }`}
+                        >
+                          {message.status === "delivered" ? (
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Entregado
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="h-3 w-3 mr-1" />
+                              Pendiente
+                            </>
+                          )}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Floating Action Button */}
+        <Button
+          size="lg"
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:scale-105"
+        >
+          <Plus className="h-6 w-6" />
+          <span className="sr-only">Nuevo mensaje</span>
+        </Button>
+      </div>
+    </div>
+  )
+}
