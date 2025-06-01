@@ -110,7 +110,7 @@ export default function Dashboard() {
           console.log("Existe su pub key: ", pubKey);
 
           if(pubKey) {
-            //logica si es verdadera -> mostrar inbox
+            setHasPublicKey(true);
           } else {
             fetchEncryptionKey();
           }
@@ -241,9 +241,9 @@ export default function Dashboard() {
             </TabsTrigger>
             <TabsTrigger
               value="sent"
-              className="data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-400 flex items-center gap-2"
+              className="text-slate-400 data-[state=active]:bg-slate-900 data-[state=active]:text-emerald-400 flex items-center gap-2"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4 text-slate-400" />
               Enviados
             </TabsTrigger>
           </TabsList>
@@ -318,14 +318,15 @@ export default function Dashboard() {
                       <div className="flex items-start gap-3 flex-1">
                         <Avatar className="h-10 w-10 bg-slate-800">
                           <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-400 text-slate-900 font-bold">
-                            {message.toAlias[0]}
+                            {message.to[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-sm text-slate-400">Para:</span>
-                            <span className="font-semibold text-slate-200">{message.toAlias}</span>
-                            <span className="text-xs font-mono text-slate-500">{formatAddress(message.to)}</span>
+                            <span className="font-semibold text-slate-200">{formatAddress(message.to)}</span>
+                            {/* <span className="font-semibold text-slate-200">{message.toAlias}</span> */}
+                            {/* <span className="text-xs font-mono text-slate-500">{formatAddress(message.to)}</span> */}
                             {message.encrypted && <Shield className="h-3 w-3 text-emerald-400" />}
                           </div>
                           <h3 className="font-medium text-slate-300 mb-1">{message.subject}</h3>

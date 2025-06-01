@@ -129,6 +129,19 @@ export default function LoginScreen() {
             </button>
           </div>
         )} */}
+        {/* Logo/Brand */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl mb-4">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">SecretDot</h1>
+          <p className="text-gray-400 text-sm">Powered by <span
+              className="font-bold bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
+            >
+              Polkadot
+            </span></p>
+        </div>
         {/* Main Card */}
         <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
           <CardContent className="p-8">
@@ -163,21 +176,6 @@ export default function LoginScreen() {
             <div className="space-y-4">
               <h3 className="text-white font-medium text-center mb-4">Conecta tu wallet para comenzar</h3>
 
-              {/* Polkadot.js Wallet */}
-              <Button
-                onClick={() => handleConnectWallet("Polkadot.js")}
-                disabled={isConnecting}
-                className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white border-0 h-12 text-base font-medium"
-              >
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"></div>
-                  </div>
-                  <span>Polkadot.js Extension</span>
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </Button>
-
               {/* MetaMask Wallet */}
               <Button
                 onClick={() => handleConnectWallet("MetaMask")}
@@ -185,11 +183,14 @@ export default function LoginScreen() {
                 variant="outline"
                 className="w-full border-gray-600 bg-gray-700/50 hover:bg-gray-700 text-white h-12 text-base font-medium"
               >
-                <div className="flex items-center justify-center gap-3">
-                  <Wallet className="w-5 h-5 text-orange-400" />
-                  <span>MetaMask</span>
-                  <ArrowRight className="w-4 h-4" />
-                </div>
+                {/* <Wallet className="w-5 h-5 text-orange-400" /> */}
+                <img
+                  src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg"
+                  alt="MetaMask"
+                  className="w-5 h-5"
+                />
+                <span>MetaMask</span>
+                <ArrowRight className="w-4 h-4" />
               </Button>
 
               {/* Other Wallets */}
