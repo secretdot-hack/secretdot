@@ -10,6 +10,8 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Badge } from "./ui/badge"
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import { getContract } from "~/utils/contract"
+import { getSignedContract } from "~/utils/contract"
+import { ethers } from "ethers"
 
 // Simulated data
 const receivedMessages = [
@@ -83,18 +85,6 @@ export default function Dashboard() {
     setAccount(localStorage.getItem("secretdot_account"));
     setChainId(localStorage.getItem("secretdot_chainId"));
 
-    //Obtener de la wallet la public key
-    async function fetchEncryptionKey() {
-      const publicKey = await window?.ethereum?.request({
-      method: "eth_getEncryptionPublicKey",
-      params: [account],
-      });
-      setPublicKey(publicKey)
-      console.log("Public Key:", publicKey);
-      
-    };
-    fetchEncryptionKey();
-    
   }, []);
 
   useEffect(() => {
@@ -106,11 +96,36 @@ export default function Dashboard() {
       });
       setPublicKey(publicKey)
       console.log("Public Key:", publicKey);
-      
     };
-    if(account) fetchEncryptionKey();
+
+    //verifica si existe la clave publica en el blockchain
+    const checkPublicKey = async () => {
+      const contract = getContract();
+
+      if (contract.GetUserPubKey) {
+        try {
+          const pubKey = await contract.GetUserPubKey(account);
+        
+          // You can set state here if needed, e.g. setHasPublicKey(exists)
+          console.log("Existe su pub key: ", pubKey);
+
+          if(pubKey) {
+            //logica si es verdadera -> mostrar inbox
+          } else {
+            fetchEncryptionKey();
+          }
+
+        } catch (err) {
+          console.log("Error checking public key:", err);
+        }
+      }
+    
+    };
+    account ? checkPublicKey() : null;
+
   },[account]);
 
+/*
   useEffect(() => {
     const contract = getContract();
     if (!contract) {
@@ -118,7 +133,7 @@ export default function Dashboard() {
       return;
     }
 
-    /*const fetchData = async () => {
+    const fetchData = async () => {
       try {
         // Aquí podrías llamar a funciones del contrato para obtener datos adicionales
         // Por ejemplo, verificar si la clave pública está registrada
@@ -135,11 +150,29 @@ export default function Dashboard() {
     fetchData();
 
     console.log(messages);
-    */
+    
   }, []);
+*/
 
   const handleMakePublicKey = () => {
     setHasPublicKey(true)
+
+    const makePublicKey = async () => {
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const signedContract = await getSignedContract(signer);
+      if (signedContract.RegisterUserPubKey) {
+        await signedContract.RegisterUserPubKey(publicKey)
+      } else {
+        console.error("RegisterUserPubKey is not defined on the contract.");
+      }
+
+    }
+
+    makePublicKey();
+
   }
 
   const formatAddress = (address: string) => {

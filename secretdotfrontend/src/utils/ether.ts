@@ -2,10 +2,10 @@ import { JsonRpcProvider, BrowserProvider, Signer } from "ethers";
 
 // Configuración de la red
 export const ASSET_HUB_CONFIG = {
-  name: "Westend Asset Hub",
-  rpc: "https://westend-asset-hub-eth-rpc.polkadot.io", // RPC del testnet
-  chainId: 420420421,
-  blockExplorer: "https://westend-asset-hub.subscan.io/",
+  name: 'moonbase-alphanet',
+  rpc: 'https://rpc.testnet.moonbeam.network', 
+  chainId: 1287, 
+  blockExplorer: 'moonbase.moonscan.io',
 };
 
 // Función para obtener un proveedor JSON-RPC

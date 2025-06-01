@@ -2,7 +2,7 @@ import { JsonRpcProvider, BrowserProvider } from 'ethers';
 
 export const ASSET_HUB_CONFIG = {
   name: 'moonbase-alphanet',
-  rpc: 'rpc.testnet.moonbeam.network', 
+  rpc: 'https://rpc.testnet.moonbeam.network', 
   chainId: 1287, 
   blockExplorer: 'moonbase.moonscan.io',
 };

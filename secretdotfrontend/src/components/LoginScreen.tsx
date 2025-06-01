@@ -12,14 +12,7 @@ import { useRouter } from "next/navigation";
 import { Shield, Wallet, Lock, ArrowRight, CheckCircle } from "lucide-react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-// import { ASSET_HUB_CONFIG } from "../../../secretdotbackend/utils/ether";
-
-const ASSET_HUB_CONFIG = {
-  name: 'moonbase-alphanet',
-  rpc: 'rpc.testnet.moonbeam.network', 
-  chainId: 1287, 
-  blockExplorer: 'moonbase.moonscan.io',
-};
+import { ASSET_HUB_CONFIG } from "../utils/ether";
 
 export default function LoginScreen() {
   const router = useRouter();
