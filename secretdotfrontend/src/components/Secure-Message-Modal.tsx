@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
@@ -10,6 +10,7 @@ import { Label } from "./ui/label"
 import { Textarea } from "./ui/textarea"
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
 import { Upload, Shield, Lock, X } from "lucide-react"
+import { getContract } from "~/utils/contract"
 
 export default function SecureMessageModal({
   open,
@@ -48,6 +49,51 @@ export default function SecureMessageModal({
     setMessage("") 
     onOpenChange(false)
   }
+
+  const checkAddress = async (address :  string) : Promise<string | undefined> => {
+    // validar la direccion ingresada
+    const contract = getContract()
+    
+    if (contract.GetUserPubKey) {
+        try {
+          const pubKey = await contract.GetUserPubKey(address);
+        
+          // You can set state here if needed, e.g. setHasPublicKey(exists)
+          console.log("Se encontro el receptor: ", pubKey);
+          return pubKey;
+
+        } catch (err) {
+          console.log("Error checking public key:", err);
+          return "";
+        }
+      }
+  }
+
+  useEffect(() => {
+    const checkAddress = async (address :  string) : Promise<string | undefined> => {
+    // validar la direccion ingresada
+    const contract = getContract()
+    
+    if (contract.GetUserPubKey) {
+        try {
+          const pubKey = await contract.GetUserPubKey(address);
+        
+          // You can set state here if needed, e.g. setHasPublicKey(exists)
+          console.log("Se encontro el receptor: ", pubKey);
+          return pubKey;
+
+        } catch (err) {
+          console.log("Error checking public key:", err);
+          return "";
+        }
+      }
+    }
+
+    //CAMBIAR EN PRODUCCION !!!!!
+    const placeholderAddresses = "0xC84ba82f6d11C2b5e03Bc3F2F23E7368EcFafbb4"; 
+    checkAddress(placeholderAddresses);
+    
+  }, [])
 
   return (
     // <div className="flex items-center justify-center min-h-screen bg-slate-50">
