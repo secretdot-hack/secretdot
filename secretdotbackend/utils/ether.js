@@ -1,4 +1,4 @@
-import { JsonRpcProvider } from 'ethers';
+import { JsonRpcProvider, BrowserProvider } from 'ethers';
 
 export const ASSET_HUB_CONFIG = {
   name: 'moonbase-alphanet',
@@ -18,7 +18,7 @@ export const getProvider = () => {
 export const getSigner = async (provider) => {
   if (window.ethereum) {
     await window.ethereum.request({ method: 'eth_requestAccounts' });
-    const ethersProvider = new ethers.BrowserProvider(window.ethereum);
+    const ethersProvider = new BrowserProvider(window.ethereum);
     return ethersProvider.getSigner();
   }
   throw new Error('No Ethereum browser provider detected');

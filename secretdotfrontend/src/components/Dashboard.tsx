@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import SecureMessageModal from "./Secure-Message-Modal"
 import { Plus, Shield, Key, Clock, CheckCircle, Send, Inbox } from "lucide-react"
 import { Button } from "./ui/button"
@@ -71,6 +71,15 @@ export default function Dashboard() {
   const [hasPublicKey, setHasPublicKey] = useState(false)
   const [activeTab, setActiveTab] = useState("inbox")
   const [modalOpen, setModalOpen] = useState(false)
+  const [account, setAccount] = useState<string | null>(null);
+  const [chainId, setChainId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Recupera los datos de la wallet conectada
+    setAccount(localStorage.getItem("secretdot_account"));
+    setChainId(localStorage.getItem("secretdot_chainId"));
+  }, []);
 
   const handleMakePublicKey = () => {
     setHasPublicKey(true)
@@ -110,6 +119,19 @@ export default function Dashboard() {
               Polkadot
             </span>
           </p>
+          {/* Datos de la wallet */}
+          {account && (
+            <div className="mt-4 p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col md:flex-row md:items-center gap-2">
+              <span className="text-xs text-emerald-400 font-mono">
+                <b>Wallet:</b> {account}
+              </span>
+              {chainId && (
+                <span className="text-xs text-cyan-400 font-mono md:ml-4">
+                  <b>Chain ID:</b> {chainId}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Main Content */}

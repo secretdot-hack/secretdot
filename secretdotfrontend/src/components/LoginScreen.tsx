@@ -1,34 +1,141 @@
 "use client"
 
-import { useState } from "react"
+// Add ethereum type to window
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation";
 import { Shield, Wallet, Lock, ArrowRight, CheckCircle } from "lucide-react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
+// import { ASSET_HUB_CONFIG } from "../../../secretdotbackend/utils/ether";
+
+const ASSET_HUB_CONFIG = {
+  name: 'moonbase-alphanet',
+  rpc: 'rpc.testnet.moonbeam.network', 
+  chainId: 1287, 
+  blockExplorer: 'moonbase.moonscan.io',
+};
 
 export default function LoginScreen() {
-  const [isConnecting, setIsConnecting] = useState(false)
+  const router = useRouter();
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [account, setAccount] = useState<string | null>(null);
+  const [chainId, setChainId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
+  // Redirige automáticamente al dashboard si hay cuenta conectada
+  useEffect(() => {
+    if (account) {
+      // Guarda la cuenta en localStorage para el dashboard
+      localStorage.setItem("secretdot_account", account);
+      localStorage.setItem("secretdot_chainId", chainId ? chainId.toString() : "");
+      router.push("/secure-messenger");
+    }
+  }, [account, chainId, router]);
+
+
+
+  // MetaMask connect logic
+  const connectMetaMask = async () => {
+    setIsConnecting(true);
+    setError(null);
+    if (!window.ethereum) {
+      setError("MetaMask no detectado. Instala MetaMask para continuar.");
+      setIsConnecting(false);
+      return;
+    }
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      setAccount(accounts[0]);
+      const chainIdHex = await window.ethereum.request({
+        method: "eth_chainId",
+      });
+      const currentChainId = parseInt(chainIdHex, 16);
+      setChainId(currentChainId);
+
+      // Cambia de red si es necesario
+      if (currentChainId !== ASSET_HUB_CONFIG.chainId) {
+        await switchNetwork();
+      }
+    } catch (err) {
+      setError("Error al conectar con MetaMask");
+    }
+    setIsConnecting(false);
+  };
+
+  const switchNetwork = async () => {
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: `0x${ASSET_HUB_CONFIG.chainId.toString(16)}` }],
+      });
+    } catch (switchError: any) {
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: `0x${ASSET_HUB_CONFIG.chainId.toString(16)}`,
+                chainName: ASSET_HUB_CONFIG.name,
+                rpcUrls: [ASSET_HUB_CONFIG.rpc],
+                blockExplorerUrls: [ASSET_HUB_CONFIG.blockExplorer],
+              },
+            ],
+          });
+        } catch {
+          setError("No se pudo agregar la red a MetaMask");
+        }
+      } else {
+        setError("No se pudo cambiar de red");
+      }
+    }
+  };
+
+  // Cambia el handler para MetaMask
   const handleConnectWallet = (walletType: string) => {
-    setIsConnecting(true)
-    // Simular conexión
+    if (walletType === "MetaMask") {
+      connectMetaMask();
+      return;
+    }
+    setIsConnecting(true);
     setTimeout(() => {
-      setIsConnecting(false)
-      console.log(`Connecting to ${walletType}...`)
-    }, 2000)
-  }
+      setIsConnecting(false);
+      console.log(`Connecting to ${walletType}...`);
+    }, 2000);
+  };
+
+  const disconnectWallet = () => {
+    setAccount(null);
+    setChainId(null);
+    setError(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md mx-auto">
-        {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl mb-4">
-            <Shield className="w-8 h-8 text-white" />
+        {/* Estado de conexión */}
+        {/* {account && (
+          <div className="mb-4 p-4 bg-gray-800 border border-gray-700 rounded-lg flex flex-col items-center">
+            <span className="text-green-400 text-xs mb-1">Wallet conectada</span>
+            <span className="text-white font-mono text-sm mb-2">
+              {account.substring(0, 6)}...{account.substring(account.length - 4)}
+            </span>
+            <button
+              onClick={disconnectWallet}
+              className="text-xs text-red-400 hover:underline"
+            >
+              Desconectar
+            </button>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">SecretDot</h1>
-          <p className="text-gray-400 text-sm">Powered by Polkadot</p>
-        </div>
-
+        )} */}
         {/* Main Card */}
         <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
           <CardContent className="p-8">
