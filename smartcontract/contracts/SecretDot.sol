@@ -6,6 +6,20 @@ pragma solidity ^0.8.0;
  * @dev Use WEB3 infra (Blockchain + ipfs with encryption) to create a dApp for password management, identifying parties via WEB3 AuthN.
  */
 contract SecretDot {
+
+    // Estructura para mensajes
+    struct Message {
+        string ipfsHash;      // Hash del contenido encriptado en IPFS
+        address sender;       // Quien envió
+        uint256 timestamp;    // Cuándo se envió
+    }
+
+    // Mapping: destinatario => array de mensajes
+    mapping(address => Message[]) private userMessages;
+
+    // Evento cuando llega un mensaje
+    event MessageSent(address indexed sender, address indexed recipient, string ipfsHash);
+
     // Mapping from user address to their public key
     mapping(address => string) private userPubKeys;
     
@@ -14,6 +28,29 @@ contract SecretDot {
     
     // Custom error for when a public key is not found
     error PubKeyNotFound(address user);
+
+    /**
+    * @dev Enviar mensaje (guardar hash de IPFS)
+    */
+    function SendMessage(address recipient, string memory ipfsHash) external {
+        require(bytes(userPubKeys[recipient]).length > 0, "Recipient not registered");
+        require(bytes(ipfsHash).length > 0, "IPFS hash cannot be empty");
+        
+        userMessages[recipient].push(Message({
+            ipfsHash: ipfsHash,
+            sender: msg.sender,
+            timestamp: block.timestamp
+        }));
+        
+        emit MessageSent(msg.sender, recipient, ipfsHash);
+    }
+
+    /**
+    * @dev Obtener mensajes del usuario que llama
+    */
+    function GetMyMessages() external view returns (Message[] memory) {
+        return userMessages[msg.sender];
+    }
     
     /**
      * @dev Register a public key for the calling user
