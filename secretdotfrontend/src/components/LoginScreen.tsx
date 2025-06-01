@@ -183,12 +183,12 @@ export default function LoginScreen() {
                 variant="outline"
                 className="w-full border-gray-600 bg-gray-700/50 hover:bg-gray-700 text-white h-12 text-base font-medium"
               >
-                {/* <Wallet className="w-5 h-5 text-orange-400" /> */}
-                <img
+                <Wallet className="w-5 h-5 text-orange-400" />
+                {/* <img
                   src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg"
                   alt="MetaMask"
                   className="w-5 h-5"
-                />
+                /> */}
                 <span>MetaMask</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
