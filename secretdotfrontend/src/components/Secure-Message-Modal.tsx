@@ -89,11 +89,9 @@ export default function SecureMessageModal({
       }
     }
 
-    //CAMBIAR EN PRODUCCION !!!!!
-    const placeholderAddresses = "0xC84ba82f6d11C2b5e03Bc3F2F23E7368EcFafbb4"; 
-    checkAddress(placeholderAddresses);
+    checkAddress(addresses);
     
-  }, [])
+  }, [addresses])
 
   return (
     // <div className="flex items-center justify-center min-h-screen bg-slate-50">
