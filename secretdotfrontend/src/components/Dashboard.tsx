@@ -81,8 +81,7 @@ export default function Dashboard() {
   const [messages, setMessages] = useState<any[]>([]);
   const [publicKey, setPublicKey] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Recupera los datos de la wallet conectada
+  useEffect(() => {    // Recupera los datos de la wallet conectada
     setAccount(localStorage.getItem("secretdot_account"));
     setChainId(localStorage.getItem("secretdot_chainId"));
 
@@ -91,37 +90,69 @@ export default function Dashboard() {
   useEffect(() => {
     //Obtener de la wallet la public key
     async function fetchEncryptionKey() {
-      const publicKey = await window?.ethereum?.request({
-      method: "eth_getEncryptionPublicKey",
-      params: [account],
-      });
-      setPublicKey(publicKey)
-      console.log("Public Key:", publicKey);
-    };
+      try {
+        if (!window?.ethereum) {
+          console.error("MetaMask no está disponible");
+          return;
+        }
+    
+        if (!account) {
+          console.error("No hay cuenta conectada");
+          return;
+        }
+    
+        const publicKey = await window.ethereum.request({
+          method: "eth_getEncryptionPublicKey",
+          params: [account],
+        });
+        
+        setPublicKey(publicKey);
+        console.log("Public Key obtenida desde MetaMask:", publicKey);
+        
+      } catch (error) {
+        console.error("Error al obtener la clave pública:", error);
+        // Podrías mostrar un mensaje de error al usuario aquí
+      }
+    }
 
     //verifica si existe la clave publica en el blockchain
     const checkPublicKey = async () => {
       const contract = getContract();
-
+    
       if (contract.GetUserPubKey) {
         try {
           const pubKey = await contract.GetUserPubKey(account);
-        
-          // You can set state here if needed, e.g. setHasPublicKey(exists)
-          console.log("Existe su pub key: ", pubKey);
-
-          if(pubKey) {
+          
+          console.log("Clave pública obtenida: ", pubKey);
+          console.log("Tipo de pubKey:", typeof pubKey);
+          console.log("Longitud de pubKey:", pubKey?.length);
+    
+          // Verificación corregida - una clave pública existe si:
+          // 1. No es null/undefined
+          // 2. No es una cadena vacía
+          // 3. No es "0x0000..." (dirección/hash vacío)
+          if (pubKey && 
+              pubKey !== "" && 
+              pubKey !== "0x0000000000000000000000000000000000000000000000000000000000000000" &&
+              pubKey.length > 0) {
+            
+            console.log("La clave pública ya existe en la blockchain");
             setHasPublicKey(true);
+            
           } else {
-            fetchEncryptionKey();
+            console.log("No existe clave pública, obteniendo una nueva...");
+            // Solo se llama a fetchEncryptionKey si no existe pubKey
+            await fetchEncryptionKey();
           }
-
+          
         } catch (err) {
           console.log("Error checking public key:", err);
+          // En caso de error, también intentamos obtener la clave
+          await fetchEncryptionKey();
         }
       }
-    
     };
+
     account ? checkPublicKey() : null;
 
   },[account]);
@@ -155,29 +186,46 @@ export default function Dashboard() {
   }, []);
 */
 
-  const handleMakePublicKey = () => {
-    setHasPublicKey(true)
+  const handleMakePublicKey = async () => {
+    try {
+      console.log("Registrando clave pública en la blockchain...");
 
-    const makePublicKey = async () => {
-      console.log("Haciendo pública la clave...");
+      // Verificar que tenemos la clave pública
+      if (!publicKey) {
+        console.error("No hay clave pública disponible");
+        return;
+      }
 
       await window.ethereum.request({ method: "eth_requestAccounts" });
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const signedContract = await getSignedContract(signer);
+      
       console.log("Signed Contract:", signedContract);
+      
       if (signedContract.RegisterUserPubKey) {
         console.log("Registrando clave pública en el contrato...");
-        await signedContract.RegisterUserPubKey(publicKey)
+        
+        // Ejecutar la transacción
+        const tx = await signedContract.RegisterUserPubKey(publicKey);
+        console.log("Transacción enviada:", tx.hash);
+        
+        // Esperar confirmación
+        const receipt = await tx.wait();
+        console.log("Transacción confirmada:", receipt);
+        
+        // Solo cambiar el estado después de que la transacción sea exitosa
+        setHasPublicKey(true);
+        
       } else {
-        console.error("RegisterUserPubKey is not defined on the contract.");
+        console.error("RegisterUserPubKey no está definido en el contrato.");
       }
 
+    } catch (error) {
+      console.error("Error al registrar la clave pública:", error);
+      // Aquí podrías mostrar un mensaje de error al usuario
     }
-
-    makePublicKey();
-
   }
 
   const formatAddress = (address: string) => {
