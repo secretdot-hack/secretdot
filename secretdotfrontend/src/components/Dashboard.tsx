@@ -101,7 +101,15 @@ export default function Dashboard() {
               SecretDot
             </h1>
           </div>
-          <p className="text-slate-400 font-mono text-sm">Mensajería descentralizada con cifrado end-to-end</p>
+          <p className="text-slate-400 font-mono text-sm">
+            Envía mensajería sensible anonima y descentralizada con cifrado end-to-end mediante la red de{" "}
+            <span
+              className="font-bold bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 bg-clip-text text-transparent"
+              style={{ WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
+            >
+              Polkadot
+            </span>
+          </p>
         </div>
 
         {/* Main Content */}
@@ -156,13 +164,15 @@ export default function Dashboard() {
                         <div className="flex items-start gap-3 flex-1">
                           <Avatar className="h-10 w-10 bg-slate-800">
                             <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-400 text-slate-900 font-bold">
-                              {message.fromAlias[0]}
+                              {/* {message.fromAlias[0]} */}
+                              <Shield className="h-3 w-3 text-black" />
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold text-slate-200">{message.fromAlias}</span>
-                              <span className="text-xs font-mono text-slate-500">{formatAddress(message.from)}</span>
+                              {/* <span className="font-semibold text-slate-200">{message.fromAlias}</span> */}
+                              <span className="font-semibold text-slate-200">{formatAddress(message.from)}</span>
+                              {/* <span className="text-xs font-mono text-slate-500">{formatAddress(message.from)}</span> */}
                               {message.encrypted && <Shield className="h-3 w-3 text-emerald-400" />}
                             </div>
                             <h3 className={`font-medium mb-1 ${!message.isRead ? "text-white" : "text-slate-300"}`}>
