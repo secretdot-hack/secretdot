@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Badge } from "./ui/badge"
 import { Avatar, AvatarFallback } from "./ui/avatar"
+import { getContract } from "~/utils/contract"
 
 // Simulated data
 const receivedMessages = [
@@ -74,11 +75,67 @@ export default function Dashboard() {
   const [account, setAccount] = useState<string | null>(null);
   const [chainId, setChainId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [publicKey, setPublicKey] = useState<string | null>(null);
 
   useEffect(() => {
     // Recupera los datos de la wallet conectada
     setAccount(localStorage.getItem("secretdot_account"));
     setChainId(localStorage.getItem("secretdot_chainId"));
+
+    //Obtener de la wallet la public key
+    async function fetchEncryptionKey() {
+      const publicKey = await window?.ethereum?.request({
+      method: "eth_getEncryptionPublicKey",
+      params: [account],
+      });
+      setPublicKey(publicKey)
+      console.log("Public Key:", publicKey);
+      
+    };
+    fetchEncryptionKey();
+    
+  }, []);
+
+  useEffect(() => {
+    //Obtener de la wallet la public key
+    async function fetchEncryptionKey() {
+      const publicKey = await window?.ethereum?.request({
+      method: "eth_getEncryptionPublicKey",
+      params: [account],
+      });
+      setPublicKey(publicKey)
+      console.log("Public Key:", publicKey);
+      
+    };
+    if(account) fetchEncryptionKey();
+  },[account]);
+
+  useEffect(() => {
+    const contract = getContract();
+    if (!contract) {
+      setError("No se pudo conectar al contrato inteligente.");
+      return;
+    }
+
+    /*const fetchData = async () => {
+      try {
+        // Aquí podrías llamar a funciones del contrato para obtener datos adicionales
+        // Por ejemplo, verificar si la clave pública está registrada
+        const result = await (contract.GetMyMessages?.(account));
+        const pubId = await (contract.GetMyPubKey?.(account));
+        console.log("Public Key ID:", pubId);
+        setMessages(Array.isArray(result) ? result : []);
+      } catch (err) {
+        console.error("Error al obtener datos del contrato:", err);
+        setError("Error al obtener datos del contrato.");
+      }
+    }
+
+    fetchData();
+
+    console.log(messages);
+    */
   }, []);
 
   const handleMakePublicKey = () => {
