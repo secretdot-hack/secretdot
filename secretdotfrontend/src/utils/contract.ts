@@ -3,7 +3,7 @@ import { getProvider } from "./ether";
 import StorageABI from "../abis/SecretDot.json";
 
 // Dirección del contrato desplegado
-export const CONTRACT_ADDRESS = "0x844D658663a88DCd22D8D3f32950721F3806E98b";
+export const CONTRACT_ADDRESS = "0x068592Ad3355F4C6Ec5106B9633AeED34F09d42c";
 
 // ABI del contrato (tipado como cualquier[] para evitar errores)
 export const CONTRACT_ABI = StorageABI.abi as any[];
