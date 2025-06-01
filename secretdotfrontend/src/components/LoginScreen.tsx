@@ -7,12 +7,13 @@ declare global {
   }
 }
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation";
 import { Shield, Wallet, Lock, ArrowRight, CheckCircle } from "lucide-react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
 import { ASSET_HUB_CONFIG } from "../utils/ether";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -20,13 +21,16 @@ export default function LoginScreen() {
   const [account, setAccount] = useState<string | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const hasNotified = useRef(false);
 
   // Redirige automáticamente al dashboard si hay cuenta conectada
   useEffect(() => {
-    if (account) {
+    if (account && !hasNotified.current) {
       // Guarda la cuenta en localStorage para el dashboard
       localStorage.setItem("secretdot_account", account);
       localStorage.setItem("secretdot_chainId", chainId ? chainId.toString() : "");
+      toast.success("Wallet conectada correctamente");
+      hasNotified.current = true;
       router.push("/secure-messenger");
     }
   }, [account, chainId, router]);
@@ -39,6 +43,7 @@ export default function LoginScreen() {
     setError(null);
     if (!window.ethereum) {
       setError("MetaMask no detectado. Instala MetaMask para continuar.");
+      toast.error("MetaMask no detectado. Instala MetaMask para continuar.");
       setIsConnecting(false);
       return;
     }
@@ -59,6 +64,7 @@ export default function LoginScreen() {
       }
     } catch (err) {
       setError("Error al conectar con MetaMask");
+      toast.error("Error al conectar con MetaMask");
     }
     setIsConnecting(false);
   };
@@ -69,6 +75,7 @@ export default function LoginScreen() {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: `0x${ASSET_HUB_CONFIG.chainId.toString(16)}` }],
       });
+      toast.success("Red cambiada correctamente");
     } catch (switchError: any) {
       if (switchError.code === 4902) {
         try {
@@ -83,11 +90,14 @@ export default function LoginScreen() {
               },
             ],
           });
+          toast.success("Red agregada y cambiada correctamente");
         } catch {
           setError("No se pudo agregar la red a MetaMask");
+          toast.error("No se pudo agregar la red a MetaMask");
         }
       } else {
         setError("No se pudo cambiar de red");
+        toast.error("No se pudo cambiar de red");
       }
     }
   };
@@ -101,7 +111,8 @@ export default function LoginScreen() {
     setIsConnecting(true);
     setTimeout(() => {
       setIsConnecting(false);
-      console.log(`Connecting to ${walletType}...`);
+      toast("Funcionalidad de otras wallets próximamente", { icon: "⏳" });
+      // console.log(`Connecting to ${walletType}...`);
     }, 2000);
   };
 
@@ -109,10 +120,12 @@ export default function LoginScreen() {
     setAccount(null);
     setChainId(null);
     setError(null);
+    toast("Wallet desconectada", { icon: "👋" });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
+      <Toaster position="top-right" />
       <div className="w-full max-w-md mx-auto">
         {/* Estado de conexión */}
         {/* {account && (

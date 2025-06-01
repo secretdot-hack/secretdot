@@ -13,6 +13,7 @@ import { getContract } from "~/utils/contract"
 import { getSignedContract } from "~/utils/contract"
 import { ethers } from "ethers"
 import { log } from "console"
+import { Toaster, toast } from "react-hot-toast"
 
 // Simulated data
 const receivedMessages = [
@@ -93,11 +94,13 @@ export default function Dashboard() {
       try {
         if (!window?.ethereum) {
           console.error("MetaMask no está disponible");
+          toast.error("MetaMask no está disponible");
           return;
         }
     
         if (!account) {
           console.error("No hay cuenta conectada");
+          toast.error("No hay cuenta conectada");
           return;
         }
     
@@ -108,9 +111,11 @@ export default function Dashboard() {
         
         setPublicKey(publicKey);
         console.log("Public Key obtenida desde MetaMask:", publicKey);
+        toast.success("Clave pública obtenida desde MetaMask");
         
       } catch (error) {
         console.error("Error al obtener la clave pública:", error);
+        toast.error("Error al obtener la clave pública desde MetaMask");
         // Podrías mostrar un mensaje de error al usuario aquí
       }
     }
@@ -193,6 +198,7 @@ export default function Dashboard() {
       // Verificar que tenemos la clave pública
       if (!publicKey) {
         console.error("No hay clave pública disponible");
+        toast.error("No hay clave pública disponible");
         return;
       }
 
@@ -210,20 +216,24 @@ export default function Dashboard() {
         // Ejecutar la transacción
         const tx = await signedContract.RegisterUserPubKey(publicKey);
         console.log("Transacción enviada:", tx.hash);
+        toast("Transacción enviada. Esperando confirmación...", { icon: "⏳" });
         
         // Esperar confirmación
         const receipt = await tx.wait();
         console.log("Transacción confirmada:", receipt);
+        toast.success("Clave pública registrada exitosamente en la blockchain");
         
         // Solo cambiar el estado después de que la transacción sea exitosa
         setHasPublicKey(true);
         
       } else {
         console.error("RegisterUserPubKey no está definido en el contrato.");
+        toast.error("No se pudo registrar la clave pública en el contrato.");
       }
 
     } catch (error) {
       console.error("Error al registrar la clave pública:", error);
+      toast.error("Error al registrar la clave pública");
       // Aquí podrías mostrar un mensaje de error al usuario
     }
   }
@@ -244,6 +254,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
+      <Toaster position="top-right" />
       <div className="container mx-auto p-6 max-w-6xl">
         {/* Header */}
         <div className="mb-8">

@@ -11,6 +11,7 @@ import { Textarea } from "./ui/textarea"
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
 import { Shield, Lock, X, CheckCircle2, AlertCircle } from "lucide-react"
 import { getContract } from "~/utils/contract"
+import { toast } from "react-hot-toast"
 
 export default function SecureMessageModal({
   open,
@@ -24,16 +25,26 @@ export default function SecureMessageModal({
   const [addressValid, setAddressValid] = useState<null | boolean>(null)
   const [addressCheckLoading, setAddressCheckLoading] = useState(false)
 
-  const handleSend = () => {
-    // Aquí iría la lógica de envío
-    // Puedes acceder a: message, addresses
-    console.log("Mensaje:", message)
-    console.log("Destinatario(s):", addresses)
-    // Aquí deberías llamar a tu función de encriptado y envío
+  const handleSend = async () => {
+    try {
+      // Aquí iría la lógica de envío
+      // Puedes acceder a: message, addresses
+      console.log("Mensaje:", message)
+      console.log("Destinatario(s):", addresses)
+      // Aquí deberías llamar a tu función de encriptado y envío
 
-    setAddresses("")
-    setMessage("")
-    onOpenChange(false)
+      // Simulación de éxito (reemplaza por tu lógica real)
+      // await sendEncryptedMessage(message, addresses);
+
+      toast.success("Mensaje enviado exitosamente")
+      setAddresses("")
+      setMessage("")
+      onOpenChange(false)
+    } catch (error) {
+      toast.error("Hubo un error al enviar el mensaje")
+      // Opcional: puedes loguear el error para debug
+      console.error(error)
+    }
   }
 
   const handleCancel = () => {
