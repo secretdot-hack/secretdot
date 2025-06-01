@@ -9,7 +9,7 @@ import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { Textarea } from "./ui/textarea"
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
-import { Upload, Shield, Lock, X } from "lucide-react"
+import { Upload, Shield, Lock, X, CheckCircle2, AlertCircle } from "lucide-react"
 import { getContract } from "~/utils/contract"
 
 export default function SecureMessageModal({
@@ -22,6 +22,8 @@ export default function SecureMessageModal({
   const [file, setFile] = useState<File | null>(null)
   const [addresses, setAddresses] = useState("")
   const [message, setMessage] = useState("")
+  const [addressValid, setAddressValid] = useState<null | boolean>(null)
+  const [addressCheckLoading, setAddressCheckLoading] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -53,44 +55,35 @@ export default function SecureMessageModal({
   const checkAddress = async (address :  string) : Promise<string | undefined> => {
     // validar la direccion ingresada
     const contract = getContract()
-    
     if (contract.GetUserPubKey) {
-        try {
-          const pubKey = await contract.GetUserPubKey(address);
-        
-          // You can set state here if needed, e.g. setHasPublicKey(exists)
-          console.log("Se encontro el receptor: ", pubKey);
-          return pubKey;
-
-        } catch (err) {
-          console.log("Error checking public key:", err);
-          return "";
-        }
+      try {
+        const pubKey = await contract.GetUserPubKey(address);
+        console.log("Se encontro el receptor: ", pubKey);
+        return pubKey;
+      } catch (err) {
+        console.log("Error checking public key:", err);
+        return "";
       }
+    }
   }
 
   useEffect(() => {
-    const checkAddress = async (address :  string) : Promise<string | undefined> => {
-    // validar la direccion ingresada
-    const contract = getContract()
-    
-    if (contract.GetUserPubKey) {
-        try {
-          const pubKey = await contract.GetUserPubKey(address);
-        
-          // You can set state here if needed, e.g. setHasPublicKey(exists)
-          console.log("Se encontro el receptor: ", pubKey);
-          return pubKey;
-
-        } catch (err) {
-          console.log("Error checking public key:", err);
-          return "";
-        }
-      }
+    // Solo chequear si hay address y no está vacía
+    if (!addresses.trim()) {
+      setAddressValid(null)
+      return
     }
-
-    checkAddress(addresses);
-    
+    setAddressCheckLoading(true)
+    const check = async () => {
+      const pubKey = await checkAddress(addresses.trim())
+      if (pubKey && pubKey.length > 0) {
+        setAddressValid(true)
+      } else {
+        setAddressValid(false)
+      }
+      setAddressCheckLoading(false)
+    }
+    check()
   }, [addresses])
 
   return (
@@ -175,14 +168,47 @@ export default function SecureMessageModal({
                 <Label htmlFor="addresses" className="text-sm font-medium text-slate-700">
                   Address de Destinatario
                 </Label>
-                <Textarea
-                  id="addresses"
-                  placeholder="0x1a23...b45c"
-                  value={addresses}
-                  onChange={(e) => setAddresses(e.target.value)}
-                  className="min-h-[80px] resize-none border-slate-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-                <p className="text-xs text-slate-500">Esta dirección será utilizada para cifrar el mensaje y solo el destinatario podrá descifrarlo.</p>
+                <div className="relative">
+                  <Textarea
+                    id="addresses"
+                    placeholder="0x1a23...b45c"
+                    value={addresses}
+                    onChange={(e) => setAddresses(e.target.value)}
+                    className={`min-h-[80px] resize-none border-slate-300 focus:border-blue-500 focus:ring-blue-500 pr-10 ${
+                      addressValid === true
+                        ? "border-green-400"
+                        : addressValid === false
+                        ? "border-red-400"
+                        : ""
+                    }`}
+                  />
+                  {/* Icono visual de validación */}
+                  {addresses.trim() && (
+                    <span className="absolute right-2 top-2">
+                      {addressCheckLoading ? (
+                        <svg className="animate-spin h-5 w-5 text-slate-400" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                      ) : addressValid === true ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      ) : addressValid === false ? (
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                      ) : null}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500">
+                  Esta dirección será utilizada para cifrar el mensaje y solo el destinatario podrá descifrarlo. 
+                </p> 
+                <p className="text-xs text-slate-500">
+                  {(addressValid === false && !addressCheckLoading) && (
+                  <span className="text-red-500">Dirección inválida o sin clave pública registrada.</span>
+                  )}
+                  {(addressValid === true && !addressCheckLoading) && (
+                  <span className="text-green-600">Dirección válida.</span>
+                  )}
+                </p>
               </div>
 
               {/* Botones de acción */}
