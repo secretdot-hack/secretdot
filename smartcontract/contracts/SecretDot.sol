@@ -1,11 +1,20 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title SecretDot
  * @dev Use WEB3 infra (Blockchain + ipfs with encryption) to create a dApp for password management, identifying parties via WEB3 AuthN.
+ * This contract inherits from OpenZeppelin's Ownable for access control.
  */
-contract SecretDot {
+contract SecretDot is Ownable {
+    /**
+     * @dev Constructor initializes the contract and sets the deployer as the owner.
+     */
+    constructor() Ownable(msg.sender) {
+        // No additional initialization needed
+    }
 
     // Estructura para mensajes
     struct Message {
@@ -26,8 +35,14 @@ contract SecretDot {
     // Event emitted when a user registers their public key
     event PubKeyRegistered(address indexed user, string pubKey);
     
+    // Event emitted when a user's public key is deleted
+    event PubKeyDeleted(address indexed user, address indexed deletedBy);
+    
     // Custom error for when a public key is not found
-    error PubKeyNotFound(address user);
+    error PubKeyNotFoundError(address user);
+    
+    // Custom error for unauthorized access
+    error UnauthorizedAccessError(address caller, address target);
 
     /**
     * @dev Enviar mensaje (guardar hash de IPFS)
@@ -72,7 +87,7 @@ contract SecretDot {
         string memory storedPubKey = userPubKeys[userAddress];
         
         if (bytes(storedPubKey).length == 0) {
-            revert PubKeyNotFound(userAddress);
+            revert PubKeyNotFoundError(userAddress);
         }
         
         return storedPubKey;
@@ -95,9 +110,42 @@ contract SecretDot {
         string memory storedPubKey = userPubKeys[msg.sender];
         
         if (bytes(storedPubKey).length == 0) {
-            revert PubKeyNotFound(msg.sender);
+            revert PubKeyNotFoundError(msg.sender);
         }
         
         return storedPubKey;
+    }
+    
+    /**
+     * @dev Delete the public key for the calling user
+     * @notice This function allows users to delete their own public key.
+     * Messages can still be received but will require re-registering a public key to decrypt them.
+     */
+    function DeleteUserPubKey() external {
+        string memory storedPubKey = userPubKeys[msg.sender];
+        
+        if (bytes(storedPubKey).length == 0) {
+            revert PubKeyNotFoundError(msg.sender);
+        }
+        
+        delete userPubKeys[msg.sender];
+        emit PubKeyDeleted(msg.sender, msg.sender);
+    }
+    
+    /**
+     * @dev Delete the public key for any user (admin function)
+     * @notice This function allows the contract owner to delete any user's public key.
+     * This can be used for moderation purposes or to assist users who have lost access.
+     * @param userAddress The address of the user whose public key should be deleted
+     */
+    function DeleteUserPubKeyAdmin(address userAddress) external onlyOwner {
+        string memory storedPubKey = userPubKeys[userAddress];
+        
+        if (bytes(storedPubKey).length == 0) {
+            revert PubKeyNotFoundError(userAddress);
+        }
+        
+        delete userPubKeys[userAddress];
+        emit PubKeyDeleted(userAddress, msg.sender);
     }
 }
