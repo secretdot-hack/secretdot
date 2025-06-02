@@ -14,6 +14,7 @@ import { getSignedContract } from "~/utils/contract"
 import { ethers } from "ethers"
 import { log } from "console"
 import { Toaster, toast } from "react-hot-toast"
+import { privateDecrypt, constants } from "crypto"
 
 // Simulated data
 const receivedMessages = [
@@ -81,6 +82,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [publicKey, setPublicKey] = useState<string | null>(null);
+  const [decryptedMessages, setDecryptedMessages] = useState<any[]>([]);
 
   useEffect(() => {    // Recupera los datos de la wallet conectada
     setAccount(localStorage.getItem("secretdot_account"));
@@ -238,6 +240,59 @@ export default function Dashboard() {
     }
   }
 
+  const fetchAndDecryptMessages = async () => {
+    try {
+        const contract = getContract();
+        if (!contract.GetMyMessages) {
+            throw new Error("GetMyMessages no está definido en el contrato.");
+        }
+
+        // Obtener mensajes del receptor desde la blockchain
+        const messages = await contract.GetMyMessages();
+        console.log("Mensajes recibidos:", messages);
+
+        const decryptedMessages = messages.map((message: any) => {
+            try {
+                const encryptedMessage = message.ipfsHash;
+                const sender = message.sender;
+
+                const privateKey = localStorage.getItem("privateKey");
+                if (!privateKey) {
+                    throw new Error("Clave privada no encontrada.");
+                }
+
+                const decryptedMessage = privateDecrypt(
+                    {
+                        key: privateKey,
+                        padding: constants.RSA_PKCS1_PADDING,
+                    },
+                    Buffer.from(encryptedMessage, "base64")
+                );
+
+                console.log(`Mensaje descifrado de ${sender}:`, decryptedMessage.toString("utf8"));
+                return {
+                    sender,
+                    decryptedMessage: decryptedMessage.toString("utf8"),
+                    timestamp: message.timestamp,
+                };
+            } catch (error) {
+                console.error("Error al descifrar el mensaje:", error);
+                return { sender: message.sender, decryptedMessage: "Error al descifrar el mensaje.", timestamp: message.timestamp };
+            }
+        });
+
+        console.log("Mensajes descifrados:", decryptedMessages);
+        setDecryptedMessages(decryptedMessages); // Actualizar estado con mensajes descifrados
+    } catch (error) {
+        console.error("Error al obtener mensajes:", error);
+        toast.error("Error al obtener mensajes desde la blockchain.");
+    }
+  };
+
+  useEffect(() => {
+    fetchAndDecryptMessages(); // Llamar a la función para obtener mensajes
+  }, []);
+
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
@@ -330,9 +385,9 @@ export default function Dashboard() {
               </Alert>
             ) : (
               <div className="space-y-4">
-                {receivedMessages.map((message) => (
+                {decryptedMessages.map((message, index) => (
                   <Card
-                    key={message.id}
+                    key={index}
                     className="bg-slate-900/50 border-slate-800 hover:border-slate-700 transition-colors"
                   >
                     <CardContent className="p-4">
@@ -340,26 +395,19 @@ export default function Dashboard() {
                         <div className="flex items-start gap-3 flex-1">
                           <Avatar className="h-10 w-10 bg-slate-800">
                             <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-400 text-slate-900 font-bold">
-                              {/* {message.fromAlias[0]} */}
                               <Shield className="h-3 w-3 text-black" />
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              {/* <span className="font-semibold text-slate-200">{message.fromAlias}</span> */}
-                              <span className="font-semibold text-slate-200">{formatAddress(message.from)}</span>
-                              {/* <span className="text-xs font-mono text-slate-500">{formatAddress(message.from)}</span> */}
-                              {message.encrypted && <Shield className="h-3 w-3 text-emerald-400" />}
+                              <span className="font-semibold text-slate-200">{formatAddress(message.sender)}</span>
                             </div>
-                            <h3 className={`font-medium mb-1 ${!message.isRead ? "text-white" : "text-slate-300"}`}>
-                              {message.subject}
-                            </h3>
-                            <p className="text-sm text-slate-400 line-clamp-2">{message.preview}</p>
+                            <h3 className="font-medium text-white mb-1">Mensaje Descifrado</h3>
+                            <p className="text-sm text-slate-400">{message.decryptedMessage}</p>
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <span className="text-xs text-slate-500 font-mono">{formatTime(message.timestamp)}</span>
-                          {!message.isRead && <div className="h-2 w-2 bg-emerald-400 rounded-full"></div>}
                         </div>
                       </div>
                     </CardContent>

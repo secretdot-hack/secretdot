@@ -50,13 +50,15 @@ contract SecretDot is Ownable {
     function SendMessage(address recipient, string memory ipfsHash) external {
         require(bytes(userPubKeys[recipient]).length > 0, "Recipient not registered");
         require(bytes(ipfsHash).length > 0, "IPFS hash cannot be empty");
-        
+
+        // Guardar el mensaje en el mapping del receptor
         userMessages[recipient].push(Message({
             ipfsHash: ipfsHash,
             sender: msg.sender,
             timestamp: block.timestamp
         }));
-        
+
+        // Emitir evento para confirmar que el mensaje fue enviado
         emit MessageSent(msg.sender, recipient, ipfsHash);
     }
 
@@ -64,6 +66,8 @@ contract SecretDot is Ownable {
     * @dev Obtener mensajes del usuario que llama
     */
     function GetMyMessages() external view returns (Message[] memory) {
+        // Verificar que el usuario tenga mensajes
+        require(userMessages[msg.sender].length > 0, "No messages found for this user");
         return userMessages[msg.sender];
     }
     

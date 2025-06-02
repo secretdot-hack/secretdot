@@ -29,43 +29,40 @@ export default function SecureMessageModal({
 
   const handleSend = async () => {
     try {
-      const contract = getContract();
-      const pubKey = await checkAddress(addresses.trim());
-      if (!pubKey) {
-        toast.error("No se pudo obtener la clave pública del receptor.");
-        return;
-      }
+        const contract = getContract();
+        const pubKey = await checkAddress(addresses.trim());
+        if (!pubKey) {
+            toast.error("No se pudo obtener la clave pública del receptor.");
+            return;
+        }
 
-      // Encriptar el mensaje con la clave pública del receptor
-      const encryptedMessage = keccak256(toUtf8Bytes(message + pubKey));
-      console.log("Mensaje encriptado:", encryptedMessage);
+        const encryptedMessage = message + pubKey; // Encriptar el mensaje con la clave pública del receptor
 
-      // Guardar el hash en la blockchain
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const signedContract = await getSignedContract(signer);
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const signedContract = await getSignedContract(signer);
 
-      if (typeof signedContract.SendMessage === "function") {
-        const tx = await signedContract.SendMessage(addresses.trim(), encryptedMessage);
-        console.log("Transacción enviada:", tx.hash);
-        toast("Transacción enviada. Esperando confirmación...", { icon: "⏳" });
+        if (typeof signedContract.SendMessage === "function") {
+            const tx = await signedContract.SendMessage(addresses.trim(), encryptedMessage); // Enviar mensaje al contrato
+            console.log("Transacción enviada:", tx.hash);
+            toast("Transacción enviada. Esperando confirmación...", { icon: "⏳" });
 
-        const receipt = await tx.wait();
-        console.log("Transacción confirmada:", receipt);
-        toast.success("Mensaje enviado exitosamente");
-      } else {
-        toast.error("La función SendMessage no está disponible en el contrato.");
-        return;
-      }
+            const receipt = await tx.wait();
+            console.log("Transacción confirmada:", receipt);
+            toast.success("Mensaje enviado exitosamente");
 
-      // Limpiar el formulario y cerrar el modal
-      setAddresses("");
-      setMessage("");
-      onOpenChange(false);
+            // Limpiar el formulario y cerrar el modal
+            setAddresses("");
+            setMessage("");
+            onOpenChange(false);
+        } else {
+            toast.error("La función SendMessage no está disponible en el contrato.");
+            return;
+        }
     } catch (error) {
-      toast.error("Hubo un error al enviar el mensaje")
-      console.error(error)
+        toast.error("Hubo un error al enviar el mensaje");
+        console.error(error);
     }
   }
 
