@@ -1,5 +1,5 @@
 #!/bin/bash
-which cast 2>/dev/null || {
+which cast &>/dev/null || {
     echo "cast is not installed; install with 'brew install foundry'" >&2
     exit 1
 }
