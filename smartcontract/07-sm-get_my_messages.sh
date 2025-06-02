@@ -10,4 +10,4 @@ source .env.public || exit 1
 : ${PUB_KEY:?required PUB_KEY environment variable is not set}
 
 set -eux
-cast call ${CONTRACT_ADDRESS:?} "GetMyMessages()" --rpc-url https://rpc.api.moonbase.moonbeam.network --private-key ${PRIVATE_KEY}
+cast call ${CONTRACT_ADDRESS:?} "GetMyMessages()" --rpc-url "${RPC_URL}" --private-key ${PRIVATE_KEY}

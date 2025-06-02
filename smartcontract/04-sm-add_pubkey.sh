@@ -11,4 +11,4 @@ source .env.public || exit 1
 : ${WALLET_ADDRESS:?required PUB_KEY environment variable is not set}
 
 set -eux
-cast send ${CONTRACT_ADDRESS:?} "RegisterUserPubKey(string)" "${PUB_KEY:?}" --rpc-url https://rpc.api.moonbase.moonbeam.network --private-key ${PRIVATE_KEY}
+cast send ${CONTRACT_ADDRESS:?} "RegisterUserPubKey(string)" "${PUB_KEY:?}" --rpc-url "${RPC_URL}" --private-key ${PRIVATE_KEY}
