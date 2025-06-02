@@ -293,7 +293,7 @@ export default function Dashboard() {
     if (account === "0x2446888ed5fbAcbd212815efFaEA383AC7C031ce") {
       const hardcodedMessages = [
         {
-          sender: "0xc84ba82f6d11c2b5e03bc3f2f23e7368ecfafbb4",
+          sender: "0x6dde724051d0c39a194601199c9e4f1dbea7d8ac",
           decryptedMessage: "My pass=HolaDemoPolkaMessage",
           timestamp: new Date().toISOString(),
         },
