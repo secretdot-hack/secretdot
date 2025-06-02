@@ -9,5 +9,7 @@ source .env.public || exit 1
 : ${CONTRACT_ADDRESS:?required CONTRACT_ADDRESS environment variable is not set}
 : ${PUB_KEY:?required PUB_KEY environment variable is not set}
 
-set -eux
-cast call ${CONTRACT_ADDRESS:?} "GetMyMessages()" --rpc-url "${RPC_URL}" --private-key ${PRIVATE_KEY}
+set -euv
+RESULT=$(cast call ${CONTRACT_ADDRESS:?} "GetMyMessages()" --rpc-url "${RPC_URL}" --private-key ${PRIVATE_KEY})
+#echo "$RESULT"
+cast abi-decode "getMyMessages()((string, address, uint32)[])" "$RESULT"

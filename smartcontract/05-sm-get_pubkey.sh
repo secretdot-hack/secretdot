@@ -10,5 +10,7 @@ source .env.public || exit 1
 : ${PUB_KEY:?required PUB_KEY environment variable is not set}
 : ${WALLET_ADDRESS:?required PUB_KEY environment variable is not set}
 
-set -eux
-cast call ${CONTRACT_ADDRESS:?} "GetUserPubKey(address)" "$(cast wallet address --private-key ${PRIVATE_KEY:?})" --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY:?}" | cast --to-ascii
+set -euv
+RESULT=$(cast call ${CONTRACT_ADDRESS:?} "GetUserPubKey(address)" "$(cast wallet address --private-key ${PRIVATE_KEY:?})" --rpc-url "${RPC_URL}" --private-key "${PRIVATE_KEY:?}")
+#echo "$RESULT"
+cast abi-decode "getUserPubKey()(string)" "$RESULT"

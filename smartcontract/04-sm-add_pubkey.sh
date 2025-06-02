@@ -10,5 +10,5 @@ source .env.public || exit 1
 : ${PUB_KEY:?required PUB_KEY environment variable is not set}
 : ${WALLET_ADDRESS:?required PUB_KEY environment variable is not set}
 
-set -eux
+set -euv
 cast send ${CONTRACT_ADDRESS:?} "RegisterUserPubKey(string)" "${PUB_KEY:?}" --rpc-url "${RPC_URL}" --private-key ${PRIVATE_KEY}
