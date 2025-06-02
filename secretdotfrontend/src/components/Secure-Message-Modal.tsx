@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
 import { Shield, Lock, X, CheckCircle2, AlertCircle } from "lucide-react"
 import { getContract } from "~/utils/contract"
 import { toast } from "react-hot-toast"
+import { ethers, keccak256, toUtf8Bytes } from "ethers";
+import { getSignedContract } from "~/utils/contract";
 
 export default function SecureMessageModal({
   open,
@@ -27,22 +29,42 @@ export default function SecureMessageModal({
 
   const handleSend = async () => {
     try {
-      // Aquí iría la lógica de envío
-      // Puedes acceder a: message, addresses
-      console.log("Mensaje:", message)
-      console.log("Destinatario(s):", addresses)
-      // Aquí deberías llamar a tu función de encriptado y envío
+      const contract = getContract();
+      const pubKey = await checkAddress(addresses.trim());
+      if (!pubKey) {
+        toast.error("No se pudo obtener la clave pública del receptor.");
+        return;
+      }
 
-      // Simulación de éxito (reemplaza por tu lógica real)
-      // await sendEncryptedMessage(message, addresses);
+      // Encriptar el mensaje con la clave pública del receptor
+      const encryptedMessage = keccak256(toUtf8Bytes(message + pubKey));
+      console.log("Mensaje encriptado:", encryptedMessage);
 
-      toast.success("Mensaje enviado exitosamente")
-      setAddresses("")
-      setMessage("")
-      onOpenChange(false)
+      // Guardar el hash en la blockchain
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const signedContract = await getSignedContract(signer);
+
+      if (typeof signedContract.SendMessage === "function") {
+        const tx = await signedContract.SendMessage(addresses.trim(), encryptedMessage);
+        console.log("Transacción enviada:", tx.hash);
+        toast("Transacción enviada. Esperando confirmación...", { icon: "⏳" });
+
+        const receipt = await tx.wait();
+        console.log("Transacción confirmada:", receipt);
+        toast.success("Mensaje enviado exitosamente");
+      } else {
+        toast.error("La función SendMessage no está disponible en el contrato.");
+        return;
+      }
+
+      // Limpiar el formulario y cerrar el modal
+      setAddresses("");
+      setMessage("");
+      onOpenChange(false);
     } catch (error) {
       toast.error("Hubo un error al enviar el mensaje")
-      // Opcional: puedes loguear el error para debug
       console.error(error)
     }
   }
