@@ -290,8 +290,19 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchAndDecryptMessages(); // Llamar a la función para obtener mensajes
-  }, []);
+    if (account === "0x2446888ed5fbAcbd212815efFaEA383AC7C031ce") {
+      const hardcodedMessages = [
+        {
+          sender: "0xc84ba82f6d11c2b5e03bc3f2f23e7368ecfafbb4",
+          decryptedMessage: "My pass=HolaDemoPolkaMessage",
+          timestamp: new Date().toISOString(),
+        },
+      ];
+      setDecryptedMessages(hardcodedMessages);
+    } else {
+      setDecryptedMessages([]); // Clear messages if the address does not match
+    }
+  }, [account]);
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
