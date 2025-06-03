@@ -1,5 +1,16 @@
-#!/bin/bash -x
-source .env || exit 1
-set -eu
-npx hardhat compile || exit 1
-npx hardhat run scripts/deploy.js --network moonbase
+#!/bin/bash
+set -euv
+source .env || true
+
+# Check if we are in local test mode
+if [[ "${RPC_URL:-}" == "http://localhost:8545" ]]; then
+    NETWORK="anvil"
+else
+    NETWORK="moonbase"
+fi
+
+# Compile contracts
+npx hardhat compile
+
+# Deploy contract
+npx hardhat run scripts/deploy.js --network $NETWORK
