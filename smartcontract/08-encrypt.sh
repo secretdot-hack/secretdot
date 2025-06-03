@@ -1,5 +1,6 @@
 #!/bin/bash
-source .env.public
-: "${PUB_KEY:?PUB_KEY is not set in .env.public}"
+source .env
+: "${PRIVATE_KEY:?PRIVATE_KEY is not set in .env}"
 set -euv
-node scripts/encrypt.js encrypt $PUB_KEY "${*:?missing msg}"
+PUB_KEY=$(cast wallet public-key --private-key "${PRIVATE_KEY}")
+node scripts/encrypt.js encrypt "${PUB_KEY}" "${*:?missing msg}"
