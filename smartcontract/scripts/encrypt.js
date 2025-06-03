@@ -28,7 +28,7 @@ async function encryptMessage(publicKeyHex, message) {
         
     } catch (error) {
         console.error('Encryption failed:', error.message);
-        process.exit(1);
+        throw error;
     }
 }
 
