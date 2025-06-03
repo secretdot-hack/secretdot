@@ -107,6 +107,8 @@ contract SecretDot is ISecretDot, Ownable, ReentrancyGuard, Pausable {
     event MessageReceivingToggled(address indexed user, bool isEnabled);
     // Mapping from user address to their public key
     mapping(address => string) private userPubKeys;
+    // Mapping to track if a pubkey was explicitly deleted
+    mapping(address => bool) private userPubKeyDeletedState;
     
     // Event emitted when a user registers their public key
     event PubKeyRegistered(address indexed user, string pubKey);
@@ -440,6 +442,7 @@ contract SecretDot is ISecretDot, Ownable, ReentrancyGuard, Pausable {
         }
         
         userPubKeys[msg.sender] = pubkey;
+        userPubKeyDeletedState[msg.sender] = false; // Clear deletion state
         
         // Re-enable message receiving when registering a new key
         messageReceivingDisabled[msg.sender] = false;
@@ -482,7 +485,7 @@ contract SecretDot is ISecretDot, Ownable, ReentrancyGuard, Pausable {
      * @return bool True if the user has a registered public key, false otherwise
      */
     function _hasRegisteredPubKeyInternal(address userAddress) internal view returns (bool) {
-        return bytes(userPubKeys[userAddress]).length > 0;
+        return bytes(userPubKeys[userAddress]).length > 0 && !userPubKeyDeletedState[userAddress];
     }
     
     /**
@@ -519,12 +522,11 @@ contract SecretDot is ISecretDot, Ownable, ReentrancyGuard, Pausable {
      * Messages can still be received but will require re-registering a public key to decrypt them.
      */
     function _deleteUserPubKeyInternal() internal {
-        string memory storedPubKey = userPubKeys[msg.sender];
-        
-        if (bytes(storedPubKey).length == 0) {
+        if (!_hasRegisteredPubKeyInternal(msg.sender)) {
             revert PubKeyNotFoundError(msg.sender);
         }
         
+        userPubKeyDeletedState[msg.sender] = true;
         delete userPubKeys[msg.sender];
         
         // Automatically disable message receiving when deleting key
@@ -547,12 +549,11 @@ contract SecretDot is ISecretDot, Ownable, ReentrancyGuard, Pausable {
      * @param userAddress The address of the user whose public key should be deleted
      */
     function _deleteUserPubKeyAdminInternal(address userAddress) internal {
-        string memory storedPubKey = userPubKeys[userAddress];
-        
-        if (bytes(storedPubKey).length == 0) {
+        if (!_hasRegisteredPubKeyInternal(userAddress)) {
             revert PubKeyNotFoundError(userAddress);
         }
         
+        userPubKeyDeletedState[userAddress] = true;
         delete userPubKeys[userAddress];
         
         // Automatically disable message receiving when deleting key

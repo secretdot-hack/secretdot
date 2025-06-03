@@ -7,8 +7,7 @@ source .env || exit 1
 : ${PRIVATE_KEY:?required PRIVATE_KEY environment variable is not set}
 source .env.public || exit 1
 : ${CONTRACT_ADDRESS:?required CONTRACT_ADDRESS environment variable is not set}
-: ${PUB_KEY:?required PUB_KEY environment variable is not set}
-: ${WALLET_ADDRESS:?required PUB_KEY environment variable is not set}
 
 set -euv
+PUB_KEY=$(cast wallet public-key --private-key "${PRIVATE_KEY}")
 cast send ${CONTRACT_ADDRESS:?} "RegisterUserPubKey(string)" "${PUB_KEY:?}" --rpc-url "${RPC_URL}" --private-key ${PRIVATE_KEY}
