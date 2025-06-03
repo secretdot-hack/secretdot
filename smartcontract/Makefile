@@ -30,13 +30,15 @@ endif
 .PHONY: help
 help:
 	@echo "Available targets:"
-	@echo "  compile        - Compile the smart contract"
-	@echo "  deploy         - Deploy the smart contract"
-	@echo "  add-pubkey     - Add public key to contract storage"
-	@echo "  get-pubkey     - Get public key from contract storage"
-	@echo "  del-pubkey     - Delete public key from contract storage"
-	@echo "  has-pubkey     - Check if public key exists in contract storage"
-	@echo "  test-local     - Run local tests using Anvil"
+	@echo "  compile         - Compile the smart contract"
+	@echo "  deploy          - Deploy the smart contract"
+	@echo "  add-pubkey      - Add public key to contract storage"
+	@echo "  get-pubkey      - Get public key from contract storage"
+	@echo "  del-pubkey      - Delete public key from contract storage"
+	@echo "  has-pubkey      - Check if public key exists in contract storage"
+	@echo "  get-my-messages - Get my messages from the contract storage"
+	@echo "  test-local      - Run local tests using Anvil"
+	@echo "  show-env        - Show current environment variables"
 
 # Compile contract
 .PHONY: compile
