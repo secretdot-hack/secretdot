@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# Check requirements first
+echo "Checking requirements..."
+make check-req
+
 # Start anvil in the background with deterministic accounts
 echo "Starting Anvil..."
 anvil --block-time 1 > anvil.log 2>&1 &
@@ -26,12 +30,9 @@ make deploy NETWORK=$NETWORK RPC_URL=$RPC_URL PRIVATE_KEY=$PRIVATE_KEY
 export CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
 echo "Contract deployed at: $CONTRACT_ADDRESS"
 
-echo "Testing against network: ${RPC_URL}"
-echo "Using contract: ${CONTRACT_ADDRESS}"
-echo "Using wallet: $(cast wallet address --private-key ${PRIVATE_KEY})"
-
 # Common make arguments
 MAKE_ARGS="NETWORK=$NETWORK RPC_URL=$RPC_URL PRIVATE_KEY=$PRIVATE_KEY CONTRACT_ADDRESS=$CONTRACT_ADDRESS"
+
+# Test functions
 source test-common.sh
-# Run the test suite
 test_suite

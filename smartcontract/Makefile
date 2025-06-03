@@ -40,6 +40,22 @@ help:
 	@echo "  test-local      - Run local tests using Anvil"
 	@echo "  show-env        - Show current environment variables"
 
+# Check required tools
+.PHONY: check-req
+check-req:
+	@echo "Checking required tools..."
+	@which cast >/dev/null 2>&1 || { echo "cast is required but not installed. Install with: brew install foundry or: curl -L https://foundry.paradigm.xyz | bash"; exit 1; }
+	@which anvil >/dev/null 2>&1 || { echo "anvil is required but not installed. Install with: brew install foundry or: curl -L https://foundry.paradigm.xyz | bash"; exit 1; }
+	@which sponge >/dev/null 2>&1 || { echo "sponge is required but not installed. Install with: brew install moreutils or: sudo apt-get install moreutils"; exit 1; }
+	@echo "All required tools are installed"
+
+# Make check-req a prerequisite for all relevant targets
+deploy: check-req
+add-pubkey: check-req
+get-pubkey: check-req
+del-pubkey: check-req
+has-pubkey: check-req
+get-my-messages: check-req
 # Compile contract
 .PHONY: compile
 compile:
