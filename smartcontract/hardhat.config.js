@@ -6,7 +6,7 @@ module.exports = {
   networks: {
     moonbase: {
       url: process.env.RPC_URL || "",
-      accounts: [process.env.PRIVATE_KEY || ""],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       gas: 2100000,
       gasPrice: 8000000000
     },
