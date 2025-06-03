@@ -60,7 +60,7 @@ add-pubkey:
 		--rpc-url "$(RPC_URL)" --private-key $(PRIVATE_KEY)
 
 # Get public key
-.PHONY: get-pubkey
+.PHONY: show-env get-pubkey
 get-pubkey:
 	@echo "Getting public key..."
 	$(eval WALLET_ADDR := $(shell cast wallet address --private-key $(PRIVATE_KEY)))
@@ -68,14 +68,14 @@ get-pubkey:
 		--rpc-url "$(RPC_URL)"
 
 # Delete public key
-.PHONY: del-pubkey
+.PHONY: show-env del-pubkey
 del-pubkey:
 	@echo "Deleting public key..."
 	cast send --gas-limit $(GAS_LIMIT) $(CONTRACT_ADDRESS) "DeleteUserPubKey()" \
 		--rpc-url "$(RPC_URL)" --private-key $(PRIVATE_KEY)
 
 # Check if key exists
-.PHONY: has-pubkey
+.PHONY: show-env has-pubkey
 has-pubkey:
 	@echo "Checking if public key exists..."
 	$(eval WALLET_ADDR := $(shell cast wallet address --private-key $(PRIVATE_KEY)))
@@ -83,13 +83,16 @@ has-pubkey:
 		--rpc-url "$(RPC_URL)"
 
 # Get my messages
-.PHONY: get-my-messages
-get-my-messages:
+get-my-messages: show-env
 	@echo "Getting messages..."
 	$(eval RESULT := $(shell cast call $(CONTRACT_ADDRESS) "GetMyMessages()" --rpc-url "$(RPC_URL)"))
 	@echo "Raw result: $(RESULT)"
 	@echo "Decoded result:"
 	cast abi-decode "getMyMessages()((bytes32,address,uint64,uint64,uint8,uint8,bool)[])" "$(RESULT)"
+
+.PHONY: show-env
+show-env:
+	@echo "ENV: NETWORK=$(NETWORK) RPC_URL=$(RPC_URL) CONTRACT_ADDRESS=$(CONTRACT_ADDRESS)"
 
 # Local test environment setup
 .PHONY: test-local
