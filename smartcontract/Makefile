@@ -82,12 +82,14 @@ has-pubkey:
 	cast call $(CONTRACT_ADDRESS) "hasRegisteredPubKey(address)" "$(WALLET_ADDR)" \
 		--rpc-url "$(RPC_URL)"
 
+# Get my messages
+.PHONY: get-my-messages
 get-my-messages:
-	@echo "Retrieving my messages..."
-	$(eval WALLET_ADDR := $(shell cast wallet address --private-key $(PRIVATE_KEY)))
-	RESULT=$$(cast call $(CONTRACT_ADDRESS) "GetMyMessages(address)" "$(WALLET_ADDR)" \
-		--rpc-url "$(RPC_URL)" --private-key $(PRIVATE_KEY)) ; echo RESULT=$$RESULT; \
-		cast abi-decode "getMyMessages()((string, address, uint32)[])" "$$RESULT"
+	@echo "Getting messages..."
+	$(eval RESULT := $(shell cast call $(CONTRACT_ADDRESS) "GetMyMessages()" --rpc-url "$(RPC_URL)"))
+	@echo "Raw result: $(RESULT)"
+	@echo "Decoded result:"
+	cast abi-decode "getMyMessages()((bytes32,address,uint64,uint64,uint8,uint8,bool)[])" "$(RESULT)"
 
 # Local test environment setup
 .PHONY: test-local
