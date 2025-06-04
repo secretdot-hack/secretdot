@@ -40,7 +40,7 @@ jobs:
       - name: Setup Forge workspace
         run: |
           mkdir -p lib
-          forge install foundry-rs/forge-std@705263c56314e0a7556d6a76b07a8df3a5b14e1f --no-commit
+          forge install foundry-rs/forge-std@705263c56314e0a7556d6a76b07a8df3a5b14e1f
 
       - name: Create remappings
         run: |
