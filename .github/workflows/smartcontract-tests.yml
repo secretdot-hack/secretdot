@@ -36,6 +36,22 @@ jobs:
         run: |
           forge --version
 
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Create remappings
+        run: |
+          echo "@openzeppelin/=node_modules/@openzeppelin/" > remappings.txt
+          echo "forge-std/=lib/forge-std/src/" >> remappings.txt
+
+      - name: Verify remappings
+        run: |
+          echo "Current remappings:"
+          cat remappings.txt
+          echo -e "\nDirectory structure:"
+          ls -la node_modules/@openzeppelin || true
+          ls -la lib/forge-std/src || true
+
       - name: Run Forge fmt
         run: |
           forge fmt --check
@@ -50,14 +66,3 @@ jobs:
         run: |
           forge test -vvv
         id: test
-#    - name: Install moreutils
-#      run: sudo apt-get update && sudo apt-get install -y moreutils
-#
-#    - name: Install dependencies
-#      run: npm ci
-#
-#    - name: Check requirements
-#      run: make check-req
-#
-#    - name: Run local tests
-#      run: ./test-contract-local.sh

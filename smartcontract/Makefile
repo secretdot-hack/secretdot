@@ -113,7 +113,7 @@ show-env:
 	@echo "ENV: NETWORK=$(NETWORK) RPC_URL=$(RPC_URL) CONTRACT_ADDRESS=$(CONTRACT_ADDRESS)"
 
 .PHONE: test
-test:
+tests:
 	@echo "Running tests..."
 	forge test
 
