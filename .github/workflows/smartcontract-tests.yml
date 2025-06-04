@@ -1,0 +1,43 @@
+name: SmartContract Tests
+
+on:
+  push:
+    branches: [ "**" ]
+    paths:
+      - "smartcontract/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "smartcontract/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./smartcontract
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: "18"
+        cache: "npm"
+        cache-dependency-path: "./smartcontract/package-lock.json"
+
+    - name: Install Foundry
+      uses: foundry-rs/foundry-toolchain@v1
+
+    - name: Install moreutils
+      run: sudo apt-get update && sudo apt-get install -y moreutils
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check requirements
+      run: make check-req
+
+    - name: Run local tests
+      run: ./test-contract-local.sh
