@@ -16,10 +16,46 @@ trap "kill $ANVIL_PID" EXIT
 # Wait a bit for anvil to start
 sleep 2
 
+# Define RPC URL early for availability checks
+RPC_URL=http://localhost:8545
+
+# Check if Anvil is available with retry
+echo "Checking Anvil network availability..."
+MAX_ATTEMPTS=10
+ATTEMPT=1
+NETWORK_AVAILABLE=false
+
+while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+  echo "Attempt $ATTEMPT of $MAX_ATTEMPTS: Checking if Anvil endpoint is ready..."
+  
+  # Try to get the network version using JSON-RPC
+  if curl -s -X POST -H "Content-Type: application/json" \
+     --data '{"jsonrpc":"2.0","method":"net_version","params":[],"id":1}' \
+     $RPC_URL | grep -q "result"; then
+    echo "✅ Anvil network is available!"
+    NETWORK_AVAILABLE=true
+    break
+  fi
+  
+  echo "❌ Anvil network not ready yet. Waiting 2 seconds before next attempt..."
+  sleep 2
+  ATTEMPT=$((ATTEMPT + 1))
+done
+
+# Exit with error if network is not available after all attempts
+if [ "$NETWORK_AVAILABLE" != "true" ]; then
+  echo "ERROR: Could not connect to Anvil network after $MAX_ATTEMPTS attempts."
+  echo "Anvil log output:"
+  cat anvil.log
+  echo "Terminating Anvil process..."
+  kill $ANVIL_PID || true
+  exit 1
+fi
+
 # Setup environment for local testing
 export NETWORK=anvil
 export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-export RPC_URL=http://localhost:8545
+export RPC_URL=$RPC_URL
 
 # Test contract deployment
 echo -e "
