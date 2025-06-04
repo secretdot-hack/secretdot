@@ -1,0 +1,75 @@
+name: SmartContract Tests
+
+on:
+  push:
+    branches: [ "**" ]
+    paths:
+      - "smartcontract/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "smartcontract/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./smartcontract
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "./smartcontract/package-lock.json"
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Show Forge version
+        run: |
+          forge --version
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Setup Forge workspace
+        run: |
+          mkdir -p lib
+          forge install foundry-rs/forge-std
+
+      - name: Create remappings
+        run: |
+          echo "@openzeppelin/=node_modules/@openzeppelin/" > remappings.txt
+          echo "forge-std/=lib/forge-std/src/" >> remappings.txt
+
+      - name: Verify remappings and dependencies
+        run: |
+          echo "Current remappings:"
+          cat remappings.txt
+          echo -e "\nDirectory structure:"
+          echo "lib directory:"
+          ls -la lib/
+          echo -e "\nforge-std source:"
+          ls -la lib/forge-std/src/ || true
+          echo -e "\nOpenZeppelin contracts:"
+          ls -la node_modules/@openzeppelin/contracts || true
+
+      - name: Run Forge fmt
+        run: |
+          forge fmt --check
+        id: fmt
+
+      - name: Run Forge build
+        run: |
+          forge build --sizes
+        id: build
+
+      - name: Run Forge tests
+        run: |
+          forge test -vvv
+        id: test
