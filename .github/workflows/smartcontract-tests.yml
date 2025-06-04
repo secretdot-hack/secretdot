@@ -19,8 +19,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Install Node.js
         uses: actions/setup-node@v3
@@ -39,18 +37,27 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Setup Forge workspace
+        run: |
+          mkdir -p lib
+          forge install foundry-rs/forge-std@705263c56314e0a7556d6a76b07a8df3a5b14e1f --no-commit
+
       - name: Create remappings
         run: |
           echo "@openzeppelin/=node_modules/@openzeppelin/" > remappings.txt
           echo "forge-std/=lib/forge-std/src/" >> remappings.txt
 
-      - name: Verify remappings
+      - name: Verify remappings and dependencies
         run: |
           echo "Current remappings:"
           cat remappings.txt
           echo -e "\nDirectory structure:"
-          ls -la node_modules/@openzeppelin || true
-          ls -la lib/forge-std/src || true
+          echo "lib directory:"
+          ls -la lib/
+          echo -e "\nforge-std source:"
+          ls -la lib/forge-std/src/ || true
+          echo -e "\nOpenZeppelin contracts:"
+          ls -la node_modules/@openzeppelin/contracts || true
 
       - name: Run Forge fmt
         run: |
