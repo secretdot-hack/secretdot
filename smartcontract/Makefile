@@ -112,6 +112,11 @@ get-my-messages: show-env
 show-env:
 	@echo "ENV: NETWORK=$(NETWORK) RPC_URL=$(RPC_URL) CONTRACT_ADDRESS=$(CONTRACT_ADDRESS)"
 
+.PHONE: test
+test:
+	@echo "Running tests..."
+	forge test
+
 # Local test environment setup
 .PHONY: test-local
 test-local:

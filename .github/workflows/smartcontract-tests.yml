@@ -18,26 +18,46 @@ jobs:
         working-directory: ./smartcontract
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Install Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: "18"
-        cache: "npm"
-        cache-dependency-path: "./smartcontract/package-lock.json"
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "./smartcontract/package-lock.json"
 
-    - name: Install Foundry
-      uses: foundry-rs/foundry-toolchain@v1
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
 
-    - name: Install moreutils
-      run: sudo apt-get update && sudo apt-get install -y moreutils
+      - name: Show Forge version
+        run: |
+          forge --version
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Run Forge fmt
+        run: |
+          forge fmt --check
+        id: fmt
 
-    - name: Check requirements
-      run: make check-req
+      - name: Run Forge build
+        run: |
+          forge build --sizes
+        id: build
 
-    - name: Run local tests
-      run: ./test-contract-local.sh
+      - name: Run Forge tests
+        run: |
+          forge test -vvv
+        id: test
+#    - name: Install moreutils
+#      run: sudo apt-get update && sudo apt-get install -y moreutils
+#
+#    - name: Install dependencies
+#      run: npm ci
+#
+#    - name: Check requirements
+#      run: make check-req
+#
+#    - name: Run local tests
+#      run: ./test-contract-local.sh
