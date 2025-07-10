@@ -62,6 +62,63 @@ The script:
 2. Uses Hardhat to compile and deploy the contract
 3. Deploys to the Moonbase Alpha testnet
 
+
+## Smart Contract Interaction Scripts
+
+After deploying the contract, you can interact with it using the following scripts:
+
+### 4. Add Public Key (`04-sm-add_pubkey.sh`)
+
+This script adds a user's public key to the smart contract:
+
+```bash
+./04-sm-add_pubkey.sh
+```
+
+The script:
+1. Takes a public key and associates it with your account address
+2. Submits a transaction to the blockchain to store this association
+3. Confirms the successful addition of your public key
+
+### 5. Get Public Key (`05-sm-get_pubkey.sh`)
+
+This script retrieves a public key associated with an address:
+
+```bash
+./05-sm-get_pubkey.sh
+```
+
+The script:
+1. Queries the smart contract for a specific address
+2. Returns the associated public key if one exists
+3. Displays an appropriate message if no key is found
+
+### 6. Delete Public Key (`06-sm-del_pubkey.sh`)
+
+This script removes your public key from the smart contract:
+
+```bash
+./06-sm-del_pubkey.sh
+```
+
+The script:
+1. Submits a transaction to remove your public key association
+2. Verifies the deletion was successful
+3. Only allows deletion of your own keys (caller's address)
+
+### 7. Get My Messages (`07-sm-get_my_messages.sh`)
+
+This script retrieves all messages associated with your account:
+
+```bash
+./07-sm-get_my_messages.sh
+```
+
+The script:
+1. Queries the smart contract for messages sent to your address
+2. Displays all messages with relevant metadata
+3. Formats the output for easy reading
+
 ## Environment Configuration
 
 Before deployment, you must create a `.env` file in this directory with the following variables:
